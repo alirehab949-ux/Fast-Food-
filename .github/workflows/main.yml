@@ -30,11 +30,8 @@ jobs:
           cordova create pabloApp com.pablo.escobare "Pablo Escobare"
           cd pabloApp
           rm -rf www/*
-          if [ -f "../index.html" ]; then
-            cp ../index.html www/
-          else
-            echo "Error: index.html not found!" && exit 1
-          fi
+          cp ../index.html www/
+          cordova plugin add cordova-plugin-geolocation
           cordova platform add android
           cordova build android --debug
 
