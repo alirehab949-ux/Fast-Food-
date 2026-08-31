@@ -1,0 +1,41 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Build APK via Cordova
+        run: |
+          npm install -g cordova
+          cordova create pabloApp com.pablo.escobare "Pablo Escobare"
+          cd pabloApp
+          rm -rf www/*
+          cp ../index.html www/
+          cordova platform add android
+          cordova build android --debug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Pablo-Escobare-APK
+          path: pabloApp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
