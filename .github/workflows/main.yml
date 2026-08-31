@@ -16,10 +16,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '20'
 
       - name: Setup Java JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -30,7 +30,11 @@ jobs:
           cordova create pabloApp com.pablo.escobare "Pablo Escobare"
           cd pabloApp
           rm -rf www/*
-          cp ../index.html www/
+          if [ -f "../index.html" ]; then
+            cp ../index.html www/
+          else
+            echo "Error: index.html not found!" && exit 1
+          fi
           cordova platform add android
           cordova build android --debug
 
