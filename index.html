@@ -740,10 +740,27 @@
       `).join('');
     }
 
-    window.sendOrderWithGPS = async function() {
+        window.sendOrderWithGPS = async function() {
       const settingsSnap = await getDoc(doc(db, "settings", "shop"));
       if(settingsSnap.exists() && settingsSnap.data().isOpen === false) { alert("Le restaurant est fermé."); return; }
       if(cart.length === 0) { alert("Votre panier est vide !"); return; }
+
+      // جلب الموقع فوراً عند الضغط على زر الطلب
+      let coords = userCoords;
+      if (navigator.geolocation) {
+        try {
+          const pos = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: true,
+              timeout: 8000,
+              maximumAge: 0
+            });
+          });
+          coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        } catch (err) {
+          console.warn("GPS timeout or permission denied", err);
+        }
+      }
 
       const total = cart.reduce((sum, i) => sum + Number(i.price), 0);
       const now = new Date();
@@ -751,11 +768,13 @@
 
       await addDoc(collection(db, "orders"), {
         phone: currentUser, items: cart, total: total,
-        gps: userCoords || { lat: "Non spécifié", lng: "Non spécifié" },
+        gps: coords || { lat: "غير محدد", lng: "غير محدد" },
         status: "En attente", time: formattedTime, createdAt: serverTimestamp()
       });
       cart = []; updateCartUI(); closeCartModal(); document.querySelectorAll('.tab-btn')[1].click();
+      alert("Commande envoyée avec succès !");
     };
+
   </script>
 </body>
   </html>
