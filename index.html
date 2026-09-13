@@ -597,6 +597,8 @@
     </div>
   </div>
 
+  <script src="cordova.js"></script>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -648,6 +650,34 @@
     let allMenuItems = [];
     let currentCategory = 'food';
 
+    // --- نظام طلب صلاحية GPS عبر Cordova ---
+    let cordovaReady = false;
+    document.addEventListener('deviceready', function() {
+      cordovaReady = true;
+    }, false);
+
+    function requestGpsLocation() {
+      const tryGetLocation = () => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            position => {
+              userCoords = { lat: position.coords.latitude, lng: position.coords.longitude };
+            },
+            error => {
+              console.log("GPS refusé ou indisponible:", error.message);
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+          );
+        }
+      };
+
+      if (cordovaReady || !window.cordova) {
+        tryGetLocation();
+      } else {
+        document.addEventListener('deviceready', tryGetLocation, false);
+      }
+    }
+
     window.loginUser = function() {
       const phone = document.getElementById('user-phone').value.trim();
       if(!phone) { window.showCustomAlert("Veuillez saisir votre numéro de téléphone.", "📱 Numéro requis"); return; }
@@ -655,11 +685,7 @@
       currentUser = phone;
       document.getElementById('auth-screen').style.display = 'none';
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-          userCoords = { lat: position.coords.latitude, lng: position.coords.longitude };
-        }, () => {});
-      }
+      requestGpsLocation();
       loadMenuAndSettings();
     };
 
@@ -849,3 +875,4 @@
   </script>
 </body>
 </html>
+
