@@ -318,6 +318,52 @@
     }
     .btn-close-modal:hover { background: rgba(255,255,255,0.1); }
 
+    /* Custom Premium Dialog (Replaces Alert & Confirm) */
+    #custom-dialog-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(3, 3, 5, 0.85);
+      backdrop-filter: blur(20px) saturate(120%); -webkit-backdrop-filter: blur(20px) saturate(120%);
+      z-index: 5000; justify-content: center; align-items: center; padding: 20px;
+    }
+    .custom-dialog-card {
+      background: var(--card-bg-gradient);
+      border: 1px solid var(--card-highlight);
+      border-radius: 24px; padding: 30px 26px; width: 100%; max-width: 400px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 30px var(--red-glow);
+      text-align: center; position: relative; overflow: hidden;
+      animation: dialogPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .custom-dialog-card::before {
+      content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(circle at top, rgba(255,0,68,0.15), transparent 60%); z-index: 0;
+    }
+    .custom-dialog-card > * { position: relative; z-index: 1; }
+    @keyframes dialogPop {
+      from { opacity: 0; transform: scale(0.85) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .dialog-title {
+      font-size: 1.25rem; font-weight: 900; margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: linear-gradient(to right, #fff, #bbb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .dialog-body { font-size: 0.95rem; color: var(--text-sub); margin-bottom: 26px; line-height: 1.6; font-weight: 600; }
+    .dialog-actions { display: flex; gap: 12px; }
+    .dialog-btn {
+      flex: 1; padding: 14px; border: none; border-radius: 14px; font-weight: 900;
+      font-size: 0.9rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+    }
+    .dialog-btn-primary {
+      background: linear-gradient(135deg, var(--red-neon), var(--red-dark)); color: #fff;
+      box-shadow: 0 8px 20px var(--red-glow);
+    }
+    .dialog-btn-primary:active { transform: scale(0.96); }
+    .dialog-btn-secondary {
+      background: rgba(255,255,255,0.05); color: var(--text-sub); border: 1px solid var(--card-border);
+    }
+    .dialog-btn-secondary:active { background: rgba(255,255,255,0.1); }
+
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 10px; }
@@ -532,6 +578,14 @@
     <button class="checkout-btn" onclick="sendOrderWithGPS()">Commander</button>
   </div>
 
+  <div id="custom-dialog-modal">
+    <div class="custom-dialog-card">
+      <div id="custom-dialog-title" class="dialog-title">🔔 Info</div>
+      <div id="custom-dialog-body" class="dialog-body">...</div>
+      <div id="custom-dialog-actions" class="dialog-actions"></div>
+    </div>
+  </div>
+
   <div id="cart-modal">
     <div class="cart-modal-content">
       <h3 style="margin-bottom:20px; color:var(--text-main); font-size:1.3rem; font-weight:900; display:flex; justify-content:space-between; align-items:center;">
@@ -559,6 +613,35 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // --- نظام النوافذ المخصص (بديل Alert & Confirm) ---
+    window.showCustomAlert = function(message, title = "🔔 Info") {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('custom-dialog-modal');
+        document.getElementById('custom-dialog-title').innerText = title;
+        document.getElementById('custom-dialog-body').innerText = message;
+        document.getElementById('custom-dialog-actions').innerHTML = `
+          <button id="dlg-ok" class="dialog-btn dialog-btn-primary">OK</button>
+        `;
+        modal.style.display = 'flex';
+        document.getElementById('dlg-ok').onclick = () => { modal.style.display = 'none'; resolve(true); };
+      });
+    };
+
+    window.showCustomConfirm = function(message, title = "⚠️ Confirmation") {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('custom-dialog-modal');
+        document.getElementById('custom-dialog-title').innerText = title;
+        document.getElementById('custom-dialog-body').innerText = message;
+        document.getElementById('custom-dialog-actions').innerHTML = `
+          <button id="dlg-yes" class="dialog-btn dialog-btn-primary">Oui</button>
+          <button id="dlg-no" class="dialog-btn dialog-btn-secondary">Annuler</button>
+        `;
+        modal.style.display = 'flex';
+        document.getElementById('dlg-yes').onclick = () => { modal.style.display = 'none'; resolve(true); };
+        document.getElementById('dlg-no').onclick = () => { modal.style.display = 'none'; resolve(false); };
+      });
+    };
+
     let currentUser = null;
     let cart = [];
     let userCoords = null;
@@ -567,7 +650,7 @@
 
     window.loginUser = function() {
       const phone = document.getElementById('user-phone').value.trim();
-      if(!phone) { alert("Veuillez saisir votre numéro de téléphone."); return; }
+      if(!phone) { window.showCustomAlert("Veuillez saisir votre numéro de téléphone.", "📱 Numéro requis"); return; }
       
       currentUser = phone;
       document.getElementById('auth-screen').style.display = 'none';
@@ -714,7 +797,8 @@
     }
 
     window.cancelOrder = async function(orderId) {
-      if(confirm("Voulez-vous annuler cette commande ?")) {
+      const confirmed = await window.showCustomConfirm("Voulez-vous annuler cette commande ?", "🗑️ Annuler la commande");
+      if(confirmed) {
         try { await deleteDoc(doc(db, "orders", orderId)); } catch(e) {}
       }
     };
@@ -748,8 +832,8 @@
 
     window.sendOrderWithGPS = async function() {
       const settingsSnap = await getDoc(doc(db, "settings", "shop"));
-      if(settingsSnap.exists() && settingsSnap.data().isOpen === false) { alert("Le restaurant est fermé."); return; }
-      if(cart.length === 0) { alert("Votre panier est vide !"); return; }
+      if(settingsSnap.exists() && settingsSnap.data().isOpen === false) { await window.showCustomAlert("Le restaurant est fermé.", "🚫 Fermé"); return; }
+      if(cart.length === 0) { await window.showCustomAlert("Votre panier est vide !", "🛒 Panier vide"); return; }
 
       const total = cart.reduce((sum, i) => sum + Number(i.price), 0);
       const now = new Date();
