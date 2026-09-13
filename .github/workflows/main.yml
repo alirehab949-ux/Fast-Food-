@@ -27,7 +27,7 @@ jobs:
       - name: Build APK via Cordova
         run: |
           npm install -g cordova
-          cordova create pabloApp com.pablo.escobare "Pablo Escobare"
+          cordova create pabloApp com.pablo.escobareclient "Pablo Escobare Client"
           cd pabloApp
           rm -rf www/*
           cp ../index.html www/
