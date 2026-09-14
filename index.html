@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Pablo Escobare | Premium Experience</title>
+  <title>BLAZE | Premium Experience</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap');
 
@@ -417,14 +417,14 @@
 
     /* 🔴 الضوء الأحمر */
     .espace-police-frame::before {
-        background: #ff0000; 
+        background: #818080; 
         /* حركة مدتها 12 ثانية مستمرة */
         animation: randomSwimRed 12s infinite ease-in-out;
     }
 
     /* 🔵 الضوء الأزرق */
     .espace-police-frame::after {
-        background: #0011ff; 
+        background: #FFF100; 
         /* حركة مدتها 14 ثانية (الاختلاف في الثواني يخلق العشوائية) */
         animation: randomSwimBlue 14s infinite ease-in-out;
     }
@@ -449,7 +449,7 @@
     /* إطار العنوان العلوي - ممتد للأعلى وللجانبين مع انحناء أسفل فقط */
     .pablo-police-frame {
         position: relative;
-        background: rgba(20, 20, 28, 0.4); 
+        background: rgba(59, 59, 59, 0.92); 
         backdrop-filter: blur(20px) saturate(120%); 
         -webkit-backdrop-filter: blur(20px) saturate(120%);
         
@@ -489,7 +489,7 @@
     }
 
     .pablo-police-frame .text-red {
-        color: #ff1e38;
+        color: #F4FF01;
     }
 
     /* أضواء الشرطة السابحة خلف العنوان */
@@ -507,13 +507,20 @@
     }
 
     .pablo-police-frame::before {
-        background: #FF0000A8; 
+        background: #8D8C8C; 
         animation: randomSwimRed 12s infinite ease-in-out;
     }
 
     .pablo-police-frame::after {
-        background: #0011FFA8; 
+        background: #F6FF00F2; 
         animation: randomSwimBlue 14s infinite ease-in-out;
+    }
+    .pablo-police-frame .text-gold {
+        color: #ffb700 !important;
+    }
+
+    .pablo-police-frame .text-white-pure {
+        color: #ffffff !important;
     }
 
   </style>
@@ -532,12 +539,12 @@
     ⚠️ Le restaurant est actuellement fermé ⚠️
   </div>
 
-  <header>
+    <header>
     <div class="pablo-police-frame">
-        <span class="text-white">PABLO</span> 
-        <span class="text-red">ESCOBARE</span>
+        <span class="text-gold">BL<span class="text-white-pure">AZE</span>
     </div>
   </header>
+
 
 
   <div class="nav-tabs">
@@ -875,4 +882,3 @@
   </script>
 </body>
 </html>
-
